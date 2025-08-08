@@ -1,7 +1,9 @@
 import Cocoa
 import STTextView
 import Neon
+import RangeState
 
+@MainActor
 class STTextViewSystemInterface: TextSystemInterface {
 
     typealias AttributeProvider = (Neon.Token) -> [NSAttributedString.Key: Any]?
@@ -14,7 +16,27 @@ class STTextViewSystemInterface: TextSystemInterface {
         self.attributeProvider = attributeProvider
     }
 
-    func clearStyle(in range: NSRange) {
+    typealias Content = UnversionableContent
+    
+    var content: Content {
+        UnversionableContent { [weak self] in
+            self?.textView.textContentManager.length ?? 0
+        }
+    }
+    
+    func applyStyles(for application: TokenApplication) {
+        // Clear existing styles in the range if a range is provided
+        if let range = application.range {
+            clearStyle(in: range)
+        }
+        
+        // Apply new styles for each token
+        for token in application.tokens {
+            applyStyle(to: token)
+        }
+    }
+    
+    private func clearStyle(in range: NSRange) {
         guard let textRange = NSTextRange(range, in: textView.textContentManager) else {
             assertionFailure()
             return
@@ -24,7 +46,7 @@ class STTextViewSystemInterface: TextSystemInterface {
         textView.addAttributes([.font: textView.font], range: range)
     }
 
-    func applyStyle(to token: Neon.Token) {
+    private func applyStyle(to token: Neon.Token) {
         guard let attrs = attributeProvider(token),
               let textRange = NSTextRange(token.range, in: textView.textContentManager)
         else {
@@ -38,17 +60,5 @@ class STTextViewSystemInterface: TextSystemInterface {
                 textView.addAttributes([attr.key: attr.value], range: token.range)
             }
         }
-    }
-
-    var length: Int {
-        textView.textContentManager.length
-    }
-
-    var visibleRange: NSRange {
-        guard let viewportRange = textView.textLayoutManager.textViewportLayoutController.viewportRange else {
-            return .zero
-        }
-
-        return NSRange(viewportRange, provider: textView.textContentManager)
     }
 }

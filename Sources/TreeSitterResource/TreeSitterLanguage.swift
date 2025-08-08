@@ -65,6 +65,31 @@ public enum TreeSitterLanguage: CaseIterable, Hashable {
     case typescript
     case yaml
 
+    public var name: String {
+        switch self {
+        case .bash: return "Bash"
+        case .c: return "C"
+        case .cpp: return "CPP"
+        case .csharp: return "CSharp"
+        case .css: return "CSS"
+        case .go: return "Go"
+        case .html: return "HTML"
+        case .java: return "Java"
+        case .javascript: return "JavaScript"
+        case .json: return "JSON"
+        case .markdown: return "Markdown"
+        case .php: return "PHP"
+        case .python: return "Python"
+        case .ruby: return "Ruby"
+        case .rust: return "Rust"
+        case .swift: return "Swift"
+        case .sql: return "SQL"
+        case .toml: return "TOML"
+        case .typescript: return "TypeScript"
+        case .yaml: return "YAML"
+        }
+    }
+    
     public var parser: OpaquePointer {
         switch self {
         case .bash:
